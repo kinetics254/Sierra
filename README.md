@@ -1,2 +1,2 @@
 # Sierra
-MS Dynamics BC Petty Cash Management
+MS Dynamics BC Approval Management
