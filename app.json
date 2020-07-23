@@ -1,0 +1,38 @@
+{
+  "id": "f87c6556-1705-45ef-94bc-91850df1a5ba",
+  "name": "Sierra",
+  "publisher": "Kinetic Technology LTD",
+  "version": "1.0.0.0",
+  "brief": "Ms Dynamics General Journal",
+  "description": "Allows for creation of General Journal",
+  "privacyStatement": "",
+  "EULA": "http://kinetics.co.ke/",
+  "help": "http://kinetics.co.ke/",
+  "url": "http://kinetics.co.ke/",
+  "logo": "GenJournal.png",
+  "dependencies": [
+    {
+      "appId": "63ca2fa4-4f03-4f2b-a480-172fef340d3f",
+      "publisher": "Microsoft",
+      "name": "System Application",
+      "version": "1.0.0.0"
+    },
+    {
+      "appId": "437dbf0e-84ff-417a-965d-ed2bb9650972",
+      "publisher": "Microsoft",
+      "name": "Base Application",
+      "version": "15.0.0.0"
+    }
+  ],
+  "screenshots": [],
+  "platform": "15.0.0.0",
+  "idRanges": [
+    {
+      "from": 60600,
+      "to": 60649
+    }
+  ],
+  "contextSensitiveHelpUrl": "https://Triton.com/help/",
+  "showMyCode": true,
+  "runtime": "4.0"
+}
