@@ -63,9 +63,11 @@ codeunit 60600 "Create General Journal"
         end;
     end;
 
-    procedure CallJournalPostRoutine()
-
+    procedure CallJournalPostRoutine(): Boolean
+    var
+        Posted: Boolean;
     begin
+        Posted := false;
         TempJournal.Get();
         with GenJnlLine do begin
             Reset();
@@ -73,9 +75,12 @@ codeunit 60600 "Create General Journal"
             SetFilter("Journal Batch Name", '%1', TempJournal."Batch Name");
             if FindSet() then begin
                 ReconcileHeaderLineAmounts(GenJnlLine);
-                Codeunit.Run(Codeunit::"Gen. Jnl.-Post", GenJnlLine)
+
+                Codeunit.Run(Codeunit::"Gen. Jnl.-Post", GenJnlLine);
+                Posted := true;
             end;
         end;
+        exit(Posted);
     end;
 
     local procedure ClearVaribles()

@@ -1,0 +1,37 @@
+	PostingDate 	:= 	 		Date   
+	DocDate 		:= 		 	Date
+	DocNo 			:=  		Code[20]
+	ExtDocNo 		:= 			Code[20]
+	SysCreated 		:= 			Boolean
+	DocType 		:= 			Integer
+	AccType 		:= 			Integer
+	AccountNo 		:= 			Code[20]
+	CurrCode 		:= 			Code[10]
+	Amt 			:= 			Decimal
+	Desc 			:= 			Text[100]
+	AppToDocNo 		:= 			Code[20]
+	AppDocType 		:= 			Integer
+	BalAccNo 		:= 			Code[20]
+	BalAccType 		:= 			Integer
+	VatBus 			:= 			Code[20]
+	VatProd 		:= 			Code[20]
+	Dim1 			:= 			Code[20]
+	Dim1 			:= 			Code[20]
+	DimSetId 		:= 			Integer
+	
+	DocType/AppToDocNo
+				0:"Document Type" := GenJnlLine."Document Type"::" ";
+                1:"Document Type" := GenJnlLine."Document Type"::Payment;
+                2:"Document Type" := GenJnlLine."Document Type"::Invoice;
+                3:"Document Type" := GenJnlLine."Document Type"::"Credit Memo";
+                4:"Document Type" := GenJnlLine."Document Type"::"Finance Charge Memo";
+                5:"Document Type" := GenJnlLine."Document Type"::Reminder;
+                6:"Document Type" := GenJnlLine."Document Type"::Refund;
+	AccType/BalAccType
+				0:"Account Type" := GenJnlLine."Account Type"::"G/L Account";
+                1:"Account Type" := GenJnlLine."Account Type"::Customer;
+                2:"Account Type" := GenJnlLine."Account Type"::Vendor;
+                3:"Account Type" := GenJnlLine."Account Type"::"Bank Account";
+                4:"Account Type" := GenJnlLine."Account Type"::"Fixed Asset";
+                5:"Account Type" := GenJnlLine."Account Type"::"IC Partner";
+                6:"Account Type" := GenJnlLine."Account Type"::Employee;
