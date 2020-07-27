@@ -167,7 +167,7 @@ codeunit 60600 "Create General Journal"
             Dim1 := VaribleArray[i];
         i += 1;
         if VaribleArray[i].IsCode then
-            Dim1 := VaribleArray[i];
+            Dim2 := VaribleArray[i];
         i += 1;
         if VaribleArray[i].IsInteger then
             DimSetId := VaribleArray[i];
@@ -282,7 +282,8 @@ codeunit 60600 "Create General Journal"
                 if Insert() then begin
                     Validate("Shortcut Dimension 1 Code", Dim1);
                     Validate("Shortcut Dimension 2 Code", Dim2);
-                    Validate("Dimension Set ID", DimSetId);
+                    if DimSetId <> 0 then
+                        Validate("Dimension Set ID", DimSetId);
                     Modify();
                     CurrJournalLineNo += 1000;
                 end;
