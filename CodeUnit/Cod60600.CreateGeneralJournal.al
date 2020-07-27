@@ -261,7 +261,11 @@ codeunit 60600 "Create General Journal"
                     2:
                         "Bal. Account Type" := GenJnlLine."Bal. Account Type"::Vendor;
                     3:
-                        "Bal. Account Type" := GenJnlLine."Bal. Account Type"::"Bank Account";
+                        begin
+                            "Bal. Account Type" := GenJnlLine."Bal. Account Type"::"Bank Account";
+                            "Bal. Account No." := BalAccNo;
+                        end;
+
                     4:
                         "Bal. Account Type" := GenJnlLine."Bal. Account Type"::"Fixed Asset";
                     5:
