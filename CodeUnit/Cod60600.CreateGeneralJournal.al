@@ -75,8 +75,7 @@ codeunit 60600 "Create General Journal"
             SetFilter("Journal Batch Name", '%1', TempJournal."Batch Name");
             if FindSet() then begin
                 ReconcileHeaderLineAmounts(GenJnlLine);
-
-                Codeunit.Run(Codeunit::"Gen. Jnl.-Post", GenJnlLine);
+                Codeunit.Run(Codeunit::"Gen. Jnl.-Post Custom", GenJnlLine);
                 Posted := true;
             end;
         end;
@@ -182,7 +181,12 @@ codeunit 60600 "Create General Journal"
         ClearVaribles();
         PackageArray(VaribleArray);
         with GenJnlLine do begin
-
+            //Reset
+            "Applies-to Doc. Type" := GenJnlLine."Applies-to Doc. Type"::" ";
+            "Applies-to Doc. No." := '';
+            "Bal. Account Type" := GenJnlLine."Bal. Account Type"::"G/L Account";
+            "Bal. Account No." := '';
+            //Reset
             Validate("Posting Date", PostingDate);
             Validate("Document Date", DocDate);
             "Line No." := CurrJournalLineNo;
@@ -308,18 +312,18 @@ codeunit 60600 "Create General Journal"
         exit(GenBatch.Get(TemplateName, BatchName));
     end;
 
-    [EventSubscriber(ObjectType::Codeunit, Codeunit::"Gen. Jnl.-Post", 'OnBeforeCode', '', false, false)]
-    local procedure HideDialog(var GenJournalLine: Record "Gen. Journal Line"; var HideDialog: Boolean)
-    var
-        LocalGenJournalLine: Record "Gen. Journal Line";
-    begin
-        TempJournal.Get();
-        LocalGenJournalLine.Reset();
-        LocalGenJournalLine.SetFilter("Journal Template Name", '%1', TempJournal."Template Name");
-        LocalGenJournalLine.SetFilter("Journal Batch Name", '%1', TempJournal."Batch Name");
-        LocalGenJournalLine.SetFilter("Document No.", '%1', GenJournalLine."Document No.");
-        if LocalGenJournalLine.FindFirst() then HideDialog := true;
-    end;
+    // [EventSubscriber(ObjectType::Codeunit, Codeunit::"Gen. Jnl.-Post", 'OnBeforeCode', '', false, false)]
+    // local procedure HideDialog(var GenJournalLine: Record "Gen. Journal Line"; var HideDialog: Boolean)
+    // var
+    //     LocalGenJournalLine: Record "Gen. Journal Line";
+    // begin
+    //     TempJournal.Get();
+    //     LocalGenJournalLine.Reset();
+    //     LocalGenJournalLine.SetFilter("Journal Template Name", '%1', TempJournal."Template Name");
+    //     LocalGenJournalLine.SetFilter("Journal Batch Name", '%1', TempJournal."Batch Name");
+    //     LocalGenJournalLine.SetFilter("Document No.", '%1', GenJournalLine."Document No.");
+    //     if LocalGenJournalLine.FindFirst() then HideDialog := true;
+    // end;
 
     local procedure ReconcileHeaderLineAmounts(GenJnlLine: Record "Gen. Journal Line")
     var
