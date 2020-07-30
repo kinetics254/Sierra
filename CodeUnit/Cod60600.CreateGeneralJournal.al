@@ -5,7 +5,11 @@ codeunit 60600 "Create General Journal"
     var
         GenJnlLine: Record "Gen. Journal Line";
         CurrJournalLineNo: Integer;
-        TempJournal: Record "Journal Temp Table";
+
+        GlobalTemplateName: Code[10];
+        GlobalBatchName: Code[20];
+        GlobalSourceCode: Code[20];
+        GlobalReasonCode: Code[20];
         PostingDate: Date;
         DocDate: Date;
         DocNo: Code[20];
@@ -27,39 +31,47 @@ codeunit 60600 "Create General Journal"
         Dim2: Code[20];
         DimSetId: Integer;
 
-    procedure ClearJournalBatch(TemplateName: Code[10]; BatchName: Code[20]; SourceCode: Code[20]; ReasonCode: Code[20])
+    procedure ClearJournalBatch(TemplateName: Code[10]; BatchName: Code[20]; SourceCode: Code[20]; ReasonCode: Code[20]): Boolean
     var
-
+        TempNotDefined: Label 'Journal Template Name not Defined';
+        BatchNotDefined: Label 'Journal Batch Not Defined';
     begin
+        GlobalTemplateName := '';
+        GlobalBatchName := '';
+        GlobalSourceCode := '';
+        GlobalReasonCode := '';
+        if TemplateName = '' then Error(TempNotDefined);
+        if BatchName = '' then Error(BatchNotDefined);
         if CheckIfJournalExist(TemplateName, BatchName) then begin
             ResetCurrentLine();
-            TempJournal.Reset();
-            if TempJournal.FindFirst() then TempJournal.DeleteAll();
+            GlobalTemplateName := TemplateName;
+            GlobalBatchName := BatchName;
+            GlobalSourceCode := SourceCode;
+            GlobalReasonCode := ReasonCode;
             with GenJnlLine do begin
                 Reset();
                 SetFilter("Journal Template Name", '%1', TemplateName);
                 SetFilter("Journal Batch Name", '%1', BatchName);
                 if FindSet() then DeleteAll();
             end;
-            TempJournal."Template Name" := TemplateName;
-            TempJournal."Batch Name" := BatchName;
-            TempJournal."Source Code" := SourceCode;
-            TempJournal."Reason Code" := ReasonCode;
-            TempJournal.Insert();
+
         end;
+        exit(CheckIfJournalExist(TemplateName, BatchName));
     end;
 
 
     local procedure SetJournalDefaults()
     var
-
+        TempNotDefined: Label 'Journal Template Name not Defined';
+        BatchNotDefined: Label 'Journal Batch Not Defined';
     begin
-        TempJournal.Get();
+        if GlobalTemplateName = '' then Error(TempNotDefined);
+        if GlobalBatchName = '' then Error(BatchNotDefined);
         with GenJnlLine do begin
-            "Journal Template Name" := TempJournal."Template Name";
-            "Journal Batch Name" := TempJournal."Batch Name";
-            "Source Code" := TempJournal."Source Code";
-            "Reason Code" := TempJournal."Reason Code";
+            "Journal Template Name" := GlobalTemplateName;
+            "Journal Batch Name" := GlobalBatchName;
+            "Source Code" := GlobalSourceCode;
+            "Reason Code" := GlobalReasonCode;
         end;
     end;
 
@@ -68,11 +80,11 @@ codeunit 60600 "Create General Journal"
         Posted: Boolean;
     begin
         Posted := false;
-        TempJournal.Get();
+
         with GenJnlLine do begin
             Reset();
-            SetFilter("Journal Template Name", '%1', TempJournal."Template Name");
-            SetFilter("Journal Batch Name", '%1', TempJournal."Batch Name");
+            SetFilter("Journal Template Name", '%1', GlobalTemplateName);
+            SetFilter("Journal Batch Name", '%1', GlobalBatchName);
             if FindSet() then begin
                 ReconcileHeaderLineAmounts(GenJnlLine);
                 Codeunit.Run(Codeunit::"Gen. Jnl.-Post Custom", GenJnlLine);
@@ -86,6 +98,7 @@ codeunit 60600 "Create General Journal"
 
     begin
         PostingDate := 0D;
+        DocDate := 0D;
         DocNo := '';
         ExtDocNo := '';
         SysCreated := false;
@@ -110,66 +123,70 @@ codeunit 60600 "Create General Journal"
     var
         i: Integer;
     begin
-        i := 1;
-        if VaribleArray[i].IsDate then
-            PostingDate := VaribleArray[i];
-        i += 1;
-        if VaribleArray[i].IsDate then
-            DocDate := VaribleArray[i];
-        i += 1;
-        if VaribleArray[i].IsCode then
-            DocNo := VaribleArray[i];
-        i += 1;
-        if VaribleArray[i].IsCode then
-            ExtDocNo := VaribleArray[i];
-        i += 1;
-        if VaribleArray[i].IsBoolean then
-            SysCreated := VaribleArray[i];
-        i += 1;
-        if VaribleArray[i].IsInteger then
-            DocType := VaribleArray[i];
-        i += 1;
-        if VaribleArray[i].IsInteger then
-            AccType := VaribleArray[i];
-        i += 1;
-        if VaribleArray[i].IsCode then
-            AccountNo := VaribleArray[i];
-        i += 1;
-        if VaribleArray[i].IsCode then
-            CurrCode := VaribleArray[i];
-        i += 1;
-        if VaribleArray[i].IsDecimal then
-            Amt := VaribleArray[i];
-        i += 1;
-        if VaribleArray[i].IsText then
-            Desc := VaribleArray[i];
-        i += 1;
-        if VaribleArray[i].IsCode then
-            AppToDocNo := VaribleArray[i];
-        i += 1;
-        if VaribleArray[i].IsInteger then
-            AppDocType := VaribleArray[i];
-        i += 1;
-        if VaribleArray[i].IsCode then
-            BalAccNo := VaribleArray[i];
-        i += 1;
-        if VaribleArray[i].IsInteger then
-            BalAccType := VaribleArray[i];
-        i += 1;
-        if VaribleArray[i].IsCode then
-            VatBus := VaribleArray[i];
-        i += 1;
-        if VaribleArray[i].IsCode then
-            VatProd := VaribleArray[i];
-        i += 1;
-        if VaribleArray[i].IsCode then
-            Dim1 := VaribleArray[i];
-        i += 1;
-        if VaribleArray[i].IsCode then
-            Dim2 := VaribleArray[i];
-        i += 1;
-        if VaribleArray[i].IsInteger then
-            DimSetId := VaribleArray[i];
+        for i := 1 to ArrayLen(VaribleArray) do begin
+            case i of
+                1:
+                    if VaribleArray[i].IsDate then
+                        PostingDate := VaribleArray[i];
+                2:
+                    if VaribleArray[i].IsDate then
+                        DocDate := VaribleArray[i];
+                3:
+                    if VaribleArray[i].IsCode then
+                        DocNo := VaribleArray[i];
+                4:
+                    if VaribleArray[i].IsCode then
+                        ExtDocNo := VaribleArray[i];
+                5:
+                    if VaribleArray[i].IsBoolean then
+                        SysCreated := VaribleArray[i];
+                6:
+                    if VaribleArray[i].IsInteger then
+                        DocType := VaribleArray[i];
+                7:
+                    if VaribleArray[i].IsInteger then
+                        AccType := VaribleArray[i];
+                8:
+                    if VaribleArray[i].IsCode then
+                        AccountNo := VaribleArray[i];
+                9:
+                    if VaribleArray[i].IsCode then
+                        CurrCode := VaribleArray[i];
+                10:
+                    if VaribleArray[i].IsDecimal then
+                        Amt := VaribleArray[i];
+                11:
+                    if VaribleArray[i].IsText then
+                        Desc := VaribleArray[i];
+                12:
+                    if VaribleArray[i].IsCode then
+                        AppToDocNo := VaribleArray[i];
+                13:
+                    if VaribleArray[i].IsInteger then
+                        AppDocType := VaribleArray[i];
+                14:
+                    if VaribleArray[i].IsCode then
+                        BalAccNo := VaribleArray[i];
+                15:
+                    if VaribleArray[i].IsInteger then
+                        BalAccType := VaribleArray[i];
+                16:
+                    if VaribleArray[i].IsCode then
+                        VatBus := VaribleArray[i];
+                17:
+                    if VaribleArray[i].IsCode then
+                        VatProd := VaribleArray[i];
+                18:
+                    if VaribleArray[i].IsCode then
+                        Dim1 := VaribleArray[i];
+                19:
+                    if VaribleArray[i].IsCode then
+                        Dim2 := VaribleArray[i];
+                20:
+                    if VaribleArray[i].IsInteger then
+                        DimSetId := VaribleArray[i];
+            end;
+        end;
 
     end;
 
