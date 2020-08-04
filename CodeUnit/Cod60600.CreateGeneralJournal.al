@@ -97,6 +97,7 @@ codeunit 60600 "Create General Journal"
     local procedure ClearVaribles()
 
     begin
+
         PostingDate := 0D;
         DocDate := 0D;
         DocNo := '';
