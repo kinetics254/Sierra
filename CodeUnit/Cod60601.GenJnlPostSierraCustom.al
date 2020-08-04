@@ -1,4 +1,4 @@
-codeunit 60601 "Gen. Jnl.-Post Custom"
+codeunit 60601 "Gen. Jnl.-Post Sierra Custom"
 {
     EventSubscriberInstance = Manual;
     TableNo = "Gen. Journal Line";

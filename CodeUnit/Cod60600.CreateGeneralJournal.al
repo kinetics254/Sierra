@@ -87,7 +87,7 @@ codeunit 60600 "Create General Journal"
             SetFilter("Journal Batch Name", '%1', GlobalBatchName);
             if FindSet() then begin
                 ReconcileHeaderLineAmounts(GenJnlLine);
-                Codeunit.Run(Codeunit::"Gen. Jnl.-Post Custom", GenJnlLine);
+                Codeunit.Run(Codeunit::"Gen. Jnl.-Post Sierra Custom", GenJnlLine);
                 Posted := true;
             end;
         end;
@@ -328,19 +328,6 @@ codeunit 60600 "Create General Journal"
     begin
         exit(GenBatch.Get(TemplateName, BatchName));
     end;
-
-    // [EventSubscriber(ObjectType::Codeunit, Codeunit::"Gen. Jnl.-Post", 'OnBeforeCode', '', false, false)]
-    // local procedure HideDialog(var GenJournalLine: Record "Gen. Journal Line"; var HideDialog: Boolean)
-    // var
-    //     LocalGenJournalLine: Record "Gen. Journal Line";
-    // begin
-    //     TempJournal.Get();
-    //     LocalGenJournalLine.Reset();
-    //     LocalGenJournalLine.SetFilter("Journal Template Name", '%1', TempJournal."Template Name");
-    //     LocalGenJournalLine.SetFilter("Journal Batch Name", '%1', TempJournal."Batch Name");
-    //     LocalGenJournalLine.SetFilter("Document No.", '%1', GenJournalLine."Document No.");
-    //     if LocalGenJournalLine.FindFirst() then HideDialog := true;
-    // end;
 
     local procedure ReconcileHeaderLineAmounts(GenJnlLine: Record "Gen. Journal Line")
     var
