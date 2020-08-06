@@ -25,6 +25,8 @@ codeunit 60602 "Create Item Journal"
         Dim1: Code[20];
         Dim2: Code[20];
         DimSetId: Integer;
+        ZeroCost: Boolean;
+        GenProdPosting: Code[20];
         TempNotDefined: Label 'Journal Template Name not Defined';
         BatchNotDefined: Label 'Journal Batch Not Defined';
 
@@ -99,6 +101,8 @@ codeunit 60602 "Create Item Journal"
         Dim1 := '';
         Dim2 := '';
         DimSetId := 0;
+        ZeroCost := false;
+        GenProdPosting := '';
     end;
 
     local procedure PackageArray(var VaribleArray: array[30] of Variant)
@@ -152,6 +156,12 @@ codeunit 60602 "Create Item Journal"
                 15:
                     if VaribleArray[i].IsInteger then
                         DimSetId := VaribleArray[i]; // Dim Set ID
+                16:
+                    if VaribleArray[i].IsBoolean then
+                        ZeroCost := VaribleArray[i]; //Check Zero Cost
+                17:
+                    if VaribleArray[i].IsCode then
+                        GenProdPosting := VaribleArray[i]; // Change Gen Posting Grp
             end;
         end;
     end;
@@ -194,11 +204,14 @@ codeunit 60602 "Create Item Journal"
             Validate("Unit of Measure Code", UOM);
             Validate("Location Code", LocationCode);
             Validate(Quantity, Qty);
-            Validate("Unit Cost", UnitCost);
+            if ZeroCost then
+                Validate("Unit Cost", UnitCost);
             if Qty = 1 then begin
                 Validate("Lot No.", LotNo);
                 Validate("Serial No.", SerialNo);
             end;
+            if GenProdPosting <> '' then
+                Validate("Gen. Prod. Posting Group", GenProdPosting);
             if Quantity <> 0 then begin
                 if Insert(true) then begin
                     Validate("Shortcut Dimension 1 Code", Dim1);
