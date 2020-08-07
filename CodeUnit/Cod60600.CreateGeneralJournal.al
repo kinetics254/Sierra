@@ -30,6 +30,7 @@ codeunit 60600 "Create General Journal"
         Dim1: Code[20];
         Dim2: Code[20];
         DimSetId: Integer;
+        FAPostingType: Integer;
 
     procedure ClearJournalBatch(TemplateName: Code[10]; BatchName: Code[20]; SourceCode: Code[20]; ReasonCode: Code[20]): Boolean
     var
@@ -118,6 +119,7 @@ codeunit 60600 "Create General Journal"
         Dim1 := '';
         Dim2 := '';
         DimSetId := 0;
+        FAPostingType := 0;
     end;
 
     local procedure PackageArray(var VaribleArray: array[30] of Variant)
@@ -186,6 +188,9 @@ codeunit 60600 "Create General Journal"
                 20:
                     if VaribleArray[i].IsInteger then
                         DimSetId := VaribleArray[i];
+                21:
+                    if VaribleArray[i].IsInteger then
+                        FAPostingType := VaribleArray[i];
             end;
         end;
 
@@ -240,7 +245,30 @@ codeunit 60600 "Create General Journal"
                 3:
                     "Account Type" := GenJnlLine."Account Type"::"Bank Account";
                 4:
-                    "Account Type" := GenJnlLine."Account Type"::"Fixed Asset";
+                    begin
+                        "Account Type" := GenJnlLine."Account Type"::"Fixed Asset";
+                        Validate("FA Posting Date", PostingDate);
+                        case FAPostingType of
+                            0:
+                                Validate("FA Posting Type", GenJnlLine."FA Posting Type"::" ");
+                            1:
+                                Validate("FA Posting Type", GenJnlLine."FA Posting Type"::"Acquisition Cost");
+                            2:
+                                Validate("FA Posting Type", GenJnlLine."FA Posting Type"::Depreciation);
+                            3:
+                                Validate("FA Posting Type", GenJnlLine."FA Posting Type"::"Write-Down");
+                            4:
+                                Validate("FA Posting Type", GenJnlLine."FA Posting Type"::Appreciation);
+                            5:
+                                Validate("FA Posting Type", GenJnlLine."FA Posting Type"::"Custom 1");
+                            6:
+                                Validate("FA Posting Type", GenJnlLine."FA Posting Type"::"Custom 2");
+                            7:
+                                Validate("FA Posting Type", GenJnlLine."FA Posting Type"::Disposal);
+                            8:
+                                Validate("FA Posting Type", GenJnlLine."FA Posting Type"::Maintenance);
+                        end;
+                    end;
                 5:
                     "Account Type" := GenJnlLine."Account Type"::"IC Partner";
                 6:

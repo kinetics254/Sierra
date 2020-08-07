@@ -23,6 +23,7 @@ codeunit 60601 "Gen. Jnl.-Post Sierra Custom"
         Text006: Label '%1 in %2 must not be equal to %3 in %4.', Comment = 'Source Code in Genenral Journal Template must not be equal to Job G/L WIP in Source Code Setup.';
         GenJnlsScheduled: Boolean;
         PreviewMode: Boolean;
+        Posted: Boolean;
 
     local procedure "Code"(var GenJnlLine: Record "Gen. Journal Line")
     var
@@ -38,7 +39,7 @@ codeunit 60601 "Gen. Jnl.-Post Sierra Custom"
     begin
         HideDialog := true;
         OnBeforeCode(GenJnlLine, HideDialog);
-
+        Posted := false;
         with GenJnlLine do begin
             GenJnlTemplate.Get("Journal Template Name");
             if GenJnlTemplate.Type = GenJnlTemplate.Type::Jobs then begin
@@ -87,7 +88,8 @@ codeunit 60601 "Gen. Jnl.-Post Sierra Custom"
                 if "Line No." = 0 then
                     Message(Text002)
                 else
-                    if TempJnlBatchName = "Journal Batch Name" then
+                    if TempJnlBatchName = "Journal Batch Name" then begin
+                        Posted := true;
                         if not HideDialog then
                             Message(Text003)
                         else
@@ -95,6 +97,7 @@ codeunit 60601 "Gen. Jnl.-Post Sierra Custom"
                                 Message(
                                 Text004,
                                 "Journal Batch Name");
+                    end;
             end;
 
             if not Find('=><') or (TempJnlBatchName <> "Journal Batch Name") or GeneralLedgerSetup."Post with Job Queue" then begin
