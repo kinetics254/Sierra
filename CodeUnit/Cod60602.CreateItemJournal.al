@@ -166,7 +166,7 @@ codeunit 60602 "Create Item Journal"
         end;
     end;
 
-    procedure CreateJournalLineGLEntry(var VaribleArray: array[30] of Variant)
+    procedure CreateItemJournalLineEntry(var VaribleArray: array[30] of Variant)
 
     begin
         //Purchase - 0,Sale - 1,Positive Adjmt. - 2,Negative Adjmt. - 3,
@@ -206,14 +206,12 @@ codeunit 60602 "Create Item Journal"
             Validate(Quantity, Qty);
             if ZeroCost then
                 Validate("Unit Cost", UnitCost);
-            if Qty = 1 then begin
-                Validate("Lot No.", LotNo);
-                Validate("Serial No.", SerialNo);
-            end;
+
             if GenProdPosting <> '' then
                 Validate("Gen. Prod. Posting Group", GenProdPosting);
             if Quantity <> 0 then begin
                 if Insert(true) then begin
+                    DoItemTracking(itemJnl, LotNo, SerialNo);
                     Validate("Shortcut Dimension 1 Code", Dim1);
                     Validate("Shortcut Dimension 2 Code", Dim2);
                     if DimSetId <> 0 then
@@ -241,4 +239,30 @@ codeunit 60602 "Create Item Journal"
         exit(Posted);
     end;
 
+    local procedure DoItemTracking(var ItemJnlLine: Record "Item Journal Line"; LotNoVar: Code[20]; SerialNoVar: Code[20])
+    var
+        TrackingSpecification: Record "Tracking Specification";
+        ResevervationEntry: Record "Reservation Entry";
+        ItemTrackingMgt: Codeunit "Item Tracking Management";
+        ReservationMgt: Codeunit "Reservation Management";
+    begin
+        if LotNoVar = '' then exit;
+        TrackingSpecification.InitFromItemJnlLine(ItemJnlLine);
+        TrackingSpecification."Quantity (Base)" := ItemJnlLine."Quantity (Base)";
+        TrackingSpecification."Lot No." := LotNoVar;
+        if SerialNoVar <> '' then
+            TrackingSpecification."Serial No." := SerialNoVar;
+        if TrackingSpecification.TrackingExists() then begin
+            ReservationMgt.SetCalcReservEntry(TrackingSpecification, ResevervationEntry);
+            ResevervationEntry."Reservation Status" := ResevervationEntry."Reservation Status"::Prospect;
+
+            if ItemJnlLine."Entry Type" in [ItemJnlLine."Entry Type"::"Positive Adjmt.", ItemJnlLine."Entry Type"::Purchase] then
+                ResevervationEntry.Validate("Quantity (Base)", ItemJnlLine."Quantity (Base)");
+            if ItemJnlLine."Entry Type" in [ItemJnlLine."Entry Type"::"Negative Adjmt.", ItemJnlLine."Entry Type"::Sale] then
+                ResevervationEntry.Validate("Quantity (Base)", (ItemJnlLine."Quantity (Base)" * -1));
+            ResevervationEntry.Insert(true);
+
+        end;
+
+    end;
 }
