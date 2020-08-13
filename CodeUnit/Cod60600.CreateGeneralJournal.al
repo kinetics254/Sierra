@@ -209,6 +209,7 @@ codeunit 60600 "Create General Journal"
             "Applies-to Doc. No." := '';
             "Bal. Account Type" := GenJnlLine."Bal. Account Type"::"G/L Account";
             "Bal. Account No." := '';
+
             //Reset
             Validate("Posting Date", PostingDate);
             Validate("Document Date", DocDate);
@@ -331,7 +332,8 @@ codeunit 60600 "Create General Journal"
                 Validate("VAT Bus. Posting Group", VatBus);
             if VatProd <> '' then
                 Validate("VAT Prod. Posting Group", VatProd);
-
+            Validate("Pmt. Discount Date", 0D);
+            Validate("Payment Discount %", 0);
             if Amount <> 0 then
                 if Insert() then begin
                     Validate("Shortcut Dimension 1 Code", Dim1);
