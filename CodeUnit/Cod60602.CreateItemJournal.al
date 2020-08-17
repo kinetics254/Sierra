@@ -225,6 +225,7 @@ codeunit 60602 "Create Item Journal"
     procedure CallItemJournalPostRoutine(): Boolean
     var
         Posted: Boolean;
+        SessionID: Integer;
     begin
         Posted := false;
         with itemJnl do begin
@@ -232,8 +233,9 @@ codeunit 60602 "Create Item Journal"
             SetFilter("Journal Template Name", '%1', GlobalTemplateName);
             SetFilter("Journal Batch Name", '%1', GlobalBatchName);
             if FindSet() then begin
-                Codeunit.Run(Codeunit::"Item Jnl.-Post Sierra Custom", itemJnl);
-                Posted := true;
+                Posted := StartSession(SessionID, Codeunit::"Item Jnl.-Post", CompanyName, itemJnl);
+                if Posted then
+                    StopSession(SessionID)
             end;
         end;
         exit(Posted);

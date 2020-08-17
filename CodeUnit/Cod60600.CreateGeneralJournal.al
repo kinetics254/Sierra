@@ -78,6 +78,7 @@ codeunit 60600 "Create General Journal"
     procedure CallJournalPostRoutine(): Boolean
     var
         Posted: Boolean;
+        SessionID: Integer;
     begin
         Posted := false;
 
@@ -87,8 +88,9 @@ codeunit 60600 "Create General Journal"
             SetFilter("Journal Batch Name", '%1', GlobalBatchName);
             if FindSet() then begin
                 ReconcileHeaderLineAmounts(GenJnlLine);
-                Codeunit.Run(Codeunit::"Gen. Jnl.-Post Sierra Custom", GenJnlLine);
-                Posted := true;
+                Posted := StartSession(SessionID, Codeunit::"Gen. Jnl.-Post", CompanyName, GenJnlLine);
+                if Posted then
+                    StopSession(SessionID);
             end;
         end;
         exit(Posted);
@@ -97,7 +99,6 @@ codeunit 60600 "Create General Journal"
     local procedure ClearVaribles()
 
     begin
-
         PostingDate := 0D;
         DocDate := 0D;
         DocNo := '';
