@@ -5,7 +5,6 @@ codeunit 60600 "Create General Journal"
     var
         GenJnlLine: Record "Gen. Journal Line";
         CurrJournalLineNo: Integer;
-
         GlobalTemplateName: Code[10];
         GlobalBatchName: Code[20];
         GlobalSourceCode: Code[20];

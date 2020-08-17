@@ -18,7 +18,7 @@
 	Dim1 			:= 			Code[20]
 	Dim1 			:= 			Code[20]
 	DimSetId 		:= 			Integer
-	
+	FAPostingType 	:= 			Integer
 	DocType/AppToDocNo
 				0:"Document Type" := GenJnlLine."Document Type"::" ";
                 1:"Document Type" := GenJnlLine."Document Type"::Payment;
@@ -35,3 +35,14 @@
                 4:"Account Type" := GenJnlLine."Account Type"::"Fixed Asset";
                 5:"Account Type" := GenJnlLine."Account Type"::"IC Partner";
                 6:"Account Type" := GenJnlLine."Account Type"::Employee;
+	FAPostingType
+				0:"FA Posting Type" := GenJnlLine."FA Posting Type"::" ";
+				1:"FA Posting Type" := GenJnlLine."FA Posting Type"::"Acquisition Cost";
+				2:"FA Posting Type" := GenJnlLine."FA Posting Type"::Depreciation;
+				3:"FA Posting Type" := GenJnlLine."FA Posting Type"::"Write-Down";
+				4:"FA Posting Type" := GenJnlLine."FA Posting Type"::Appreciation;
+				5:"FA Posting Type" := GenJnlLine."FA Posting Type"::"Custom 1";
+				6:"FA Posting Type" := GenJnlLine."FA Posting Type"::"Custom 2";
+				7:"FA Posting Type" := GenJnlLine."FA Posting Type"::Disposal;
+				8:"FA Posting Type" := GenJnlLine."FA Posting Type"::Maintenance;
+			
