@@ -217,6 +217,7 @@ codeunit 60602 "Create Item Journal"
                     if DimSetId <> 0 then
                         Validate("Dimension Set ID", DimSetId);
                     Modify();
+                    CurrJournalLineNo += 1000;
                 end;
             end;
         end;

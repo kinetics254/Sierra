@@ -209,8 +209,8 @@ codeunit 60600 "Create General Journal"
             "Applies-to Doc. No." := '';
             "Bal. Account Type" := GenJnlLine."Bal. Account Type"::"G/L Account";
             "Bal. Account No." := '';
-
             //Reset
+
             Validate("Posting Date", PostingDate);
             Validate("Document Date", DocDate);
             "Line No." := CurrJournalLineNo;
