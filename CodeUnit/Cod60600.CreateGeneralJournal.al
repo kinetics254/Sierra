@@ -30,6 +30,7 @@ codeunit 60600 "Create General Journal"
         Dim2: Code[20];
         DimSetId: Integer;
         FAPostingType: Integer;
+        Posted: Boolean;
 
     procedure ClearJournalBatch(TemplateName: Code[10]; BatchName: Code[20]; SourceCode: Code[20]; ReasonCode: Code[20]): Boolean
     var
@@ -77,7 +78,7 @@ codeunit 60600 "Create General Journal"
 
     procedure CallJournalPostRoutine(): Boolean
     var
-        Posted: Boolean;
+
         SessionID: Integer;
     begin
         Posted := false;
@@ -88,9 +89,9 @@ codeunit 60600 "Create General Journal"
             SetFilter("Journal Batch Name", '%1', GlobalBatchName);
             if FindSet() then begin
                 ReconcileHeaderLineAmounts(GenJnlLine);
-                Posted := StartSession(SessionID, Codeunit::"Gen. Jnl.-Post", CompanyName, GenJnlLine);
-                if Posted then
-                    StopSession(SessionID);
+                Codeunit.Run(Codeunit::"Gen. Jnl.-Post", GenJnlLine);
+                // StartSession(SessionID, Codeunit::"Gen. Jnl.-Post", CompanyName, GenJnlLine);
+                // StopSession(SessionID);
             end;
         end;
         exit(Posted);
@@ -387,11 +388,31 @@ codeunit 60600 "Create General Journal"
         GnlJnLines.SetFilter("Account Type", '%1', GnlJnLines."Account Type"::"Bank Account");
         GnlJnLines.SetFilter("Bal. Account No.", '%1', '');
         if GnlJnLines.FindSet() then begin
+            GnlJnLines.CalcSums("Amount (LCY)");
             DeltaVar := LineTotalsVar - Abs(GnlJnLines."Amount (LCY)");
             if Abs(DeltaVar) < 0.5 then begin
                 GnlJnLines.Validate("Amount (LCY)", (GnlJnLines."Amount (LCY)" - DeltaVar));
                 GnlJnLines.Modify();
             end;
         end;
+    end;
+
+    [EventSubscriber(ObjectType::Codeunit, Codeunit::"Gen. Jnl.-Post Batch", 'OnBeforeUpdateAndDeleteLines', '', false, false)]
+    local procedure OnBeforeUpdateAndDeleteLines(var GenJournalLine: Record "Gen. Journal Line")
+    var
+
+    begin
+        Posted := GenJournalLine."Journal Batch Name" = GlobalBatchName;
+    end;
+
+    [EventSubscriber(ObjectType::Codeunit, Codeunit::"Gen. Jnl.-Post", 'OnBeforeCode', '', false, false)]
+    local procedure OnBeforeCode(var GenJournalLine: Record "Gen. Journal Line"; var HideDialog: Boolean)
+    var
+
+    begin
+        if (GlobalTemplateName = GenJournalLine."Journal Template Name")
+        and (GlobalBatchName = GenJournalLine."Journal Batch Name")
+        then
+            HideDialog := true;
     end;
 }

@@ -29,6 +29,7 @@ codeunit 60602 "Create Item Journal"
         GenProdPosting: Code[20];
         TempNotDefined: Label 'Journal Template Name not Defined';
         BatchNotDefined: Label 'Journal Batch Not Defined';
+        Posted: Boolean;
 
     procedure ClearJournalBatch(TemplateName: Code[10]; BatchName: Code[20]; SourceCode: Code[20]; ReasonCode: Code[20]): Boolean
 
@@ -225,7 +226,7 @@ codeunit 60602 "Create Item Journal"
 
     procedure CallItemJournalPostRoutine(): Boolean
     var
-        Posted: Boolean;
+
         SessionID: Integer;
     begin
         Posted := false;
@@ -234,9 +235,9 @@ codeunit 60602 "Create Item Journal"
             SetFilter("Journal Template Name", '%1', GlobalTemplateName);
             SetFilter("Journal Batch Name", '%1', GlobalBatchName);
             if FindSet() then begin
-                Posted := StartSession(SessionID, Codeunit::"Item Jnl.-Post", CompanyName, itemJnl);
-                if Posted then
-                    StopSession(SessionID)
+                Codeunit.Run(Codeunit::"Item Jnl.-Post", itemJnl);
+                // StartSession(SessionID, Codeunit::"Item Jnl.-Post", CompanyName, itemJnl);
+                // StopSession(SessionID)
             end;
         end;
         exit(Posted);
@@ -267,5 +268,21 @@ codeunit 60602 "Create Item Journal"
 
         end;
 
+    end;
+
+    [EventSubscriber(ObjectType::Codeunit, Codeunit::"Item Jnl.-Post Batch", 'OnBeforeUpdateDeleteLines', '', false, false)]
+    local procedure OnBeforeUpdateAndDeleteLines(var ItemJournalLine: Record "Item Journal Line")
+    var
+
+    begin
+        Posted := ItemJournalLine."Journal Batch Name" = GlobalBatchName;
+    end;
+
+    [EventSubscriber(ObjectType::Codeunit, Codeunit::"Item Jnl.-Post", 'OnBeforeCode', '', false, false)]
+    local procedure OnBeforeCode(var ItemJournalLine: Record "Item Journal Line"; var HideDialog: Boolean)
+
+    begin
+        if (GlobalTemplateName = ItemJournalLine."Journal Template Name") and (GlobalBatchName = ItemJournalLine."Journal Batch Name") then
+            HideDialog := true;
     end;
 }
