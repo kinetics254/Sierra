@@ -14,6 +14,7 @@ codeunit 60603 "Pre-Processor"
         GenJnlLine: Record "Gen. Journal Line";
         PurchaseHeader: Record "Purchase Header";
         SalesHeader: Record "Sales Header";
+        ItemJnl: Record "Item Journal Line";
     begin
         Posted := false;
         RecordRef.GetTable(RecordVariant);
@@ -22,6 +23,11 @@ codeunit 60603 "Pre-Processor"
                 begin
                     RecordRef.SetTable(GenJnlLine);
                     exit(PostGenJnl(GenJnlLine));
+                end;
+            Database::"Item Journal Line":
+                begin
+                    RecordRef.SetTable(ItemJnl);
+                    exit(PostItemJnl(ItemJnl));
                 end;
             Database::"Purchase Header":
                 begin
@@ -111,5 +117,33 @@ codeunit 60603 "Pre-Processor"
                     Posted := not (SalesCrMemoHdrNo = '');
             end;
         end;
+    end;
+
+    local procedure PostItemJnl(var ItenJnlLine: Record "Item Journal Line"): Boolean
+    var
+        SessionID: Integer;
+    begin
+        GlobalBatch := ItenJnlLine."Journal Batch Name";
+        if not ItenJnlLine.IsEmpty then begin
+            GlobalTemplateName := ItenJnlLine."Journal Template Name";
+            GlobalBatchName := ItenJnlLine."Journal Batch Name";
+            Codeunit.Run(Codeunit::"Item Jnl.-Post", ItenJnlLine);
+        end;
+        exit(Posted);
+    end;
+
+    [EventSubscriber(ObjectType::Codeunit, Codeunit::"Item Jnl.-Post Batch", 'OnBeforeUpdateDeleteLines', '', false, false)]
+    local procedure OnBeforeUpdateAndDeleteItemLines(var ItemJournalLine: Record "Item Journal Line")
+    begin
+        Posted := ItemJournalLine."Journal Batch Name" = GlobalBatch;
+    end;
+
+    [EventSubscriber(ObjectType::Codeunit, Codeunit::"Item Jnl.-Post", 'OnBeforeCode', '', false, false)]
+    local procedure OnBeforeItemCode(var ItemJournalLine: Record "Item Journal Line"; var HideDialog: Boolean)
+    begin
+        if (GlobalTemplateName = ItemJournalLine."Journal Template Name")
+        and (GlobalBatchName = ItemJournalLine."Journal Batch Name")
+        then
+            HideDialog := true;
     end;
 }
