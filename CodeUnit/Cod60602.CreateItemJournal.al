@@ -46,13 +46,10 @@ codeunit 60602 "Create Item Journal"
             GlobalBatchName := BatchName;
             GlobalSourceCode := SourceCode;
             GlobalReasonCode := ReasonCode;
-            with itemJnl do begin
-                Reset();
-                SetFilter("Journal Template Name", '%1', TemplateName);
-                SetFilter("Journal Batch Name", '%1', BatchName);
-                if FindSet() then DeleteAll();
-            end;
-
+            itemJnl.Reset();
+            itemJnl.SetFilter("Journal Template Name", '%1', TemplateName);
+            itemJnl.SetFilter("Journal Batch Name", '%1', BatchName);
+            if itemJnl.FindSet() then itemJnl.DeleteAll();
         end;
         exit(CheckIfJournalExist(TemplateName, BatchName));
     end;
@@ -68,12 +65,11 @@ codeunit 60602 "Create Item Journal"
     begin
         if GlobalTemplateName = '' then Error(TempNotDefined);
         if GlobalBatchName = '' then Error(BatchNotDefined);
-        with itemJnl do begin
-            "Journal Template Name" := GlobalTemplateName;
-            "Journal Batch Name" := GlobalBatchName;
-            "Source Code" := GlobalSourceCode;
-            "Reason Code" := GlobalReasonCode;
-        end;
+        itemJnl."Journal Template Name" := GlobalTemplateName;
+        itemJnl."Journal Batch Name" := GlobalBatchName;
+        itemJnl."Source Code" := GlobalSourceCode;
+        itemJnl."Reason Code" := GlobalReasonCode;
+
     end;
 
     local procedure CheckIfJournalExist(TemplateName: Code[10]; BatchName: Code[20]): Boolean
@@ -175,53 +171,52 @@ codeunit 60602 "Create Item Journal"
         SetJournalDefaults(); //Assign default Journal properties
         ClearVaribles();
         PackageArray(VaribleArray);
-        with itemJnl do begin
-            "Document No." := DocNo;
-            "Line No." := CurrJournalLineNo;
-            Validate("Posting Date", PostingDate);
-            Validate("Document Date", DocDate);
-            "External Document No." := ExtDocNo;
-            case EntryType of
-                0:
-                    Validate("Entry Type", itemJnl."Entry Type"::Purchase);
-                1:
-                    Validate("Entry Type", itemJnl."Entry Type"::Sale);
-                2:
-                    Validate("Entry Type", itemJnl."Entry Type"::"Positive Adjmt.");
-                3:
-                    Validate("Entry Type", itemJnl."Entry Type"::"Negative Adjmt.");
-                4:
-                    Validate("Entry Type", itemJnl."Entry Type"::Transfer);
-                5:
-                    Validate("Entry Type", itemJnl."Entry Type"::Consumption);
-                6:
-                    Validate("Entry Type", itemJnl."Entry Type"::Output);
-                7:
-                    Validate("Entry Type", itemJnl."Entry Type"::"Assembly Consumption");
-                8:
-                    Validate("Entry Type", itemJnl."Entry Type"::"Assembly Output");
-            end;
-            Validate("Item No.", ItemNo);
-            Validate("Unit of Measure Code", UOM);
-            Validate("Location Code", LocationCode);
-            Validate(Quantity, Qty);
-            if ZeroCost then
-                Validate("Unit Cost", UnitCost);
+        itemJnl."Document No." := DocNo;
+        itemJnl."Line No." := CurrJournalLineNo;
+        itemJnl.Validate("Posting Date", PostingDate);
+        itemJnl.Validate("Document Date", DocDate);
+        itemJnl."External Document No." := ExtDocNo;
+        case EntryType of
+            0:
+                itemJnl.Validate("Entry Type", itemJnl."Entry Type"::Purchase);
+            1:
+                itemJnl.Validate("Entry Type", itemJnl."Entry Type"::Sale);
+            2:
+                itemJnl.Validate("Entry Type", itemJnl."Entry Type"::"Positive Adjmt.");
+            3:
+                itemJnl.Validate("Entry Type", itemJnl."Entry Type"::"Negative Adjmt.");
+            4:
+                itemJnl.Validate("Entry Type", itemJnl."Entry Type"::Transfer);
+            5:
+                itemJnl.Validate("Entry Type", itemJnl."Entry Type"::Consumption);
+            6:
+                itemJnl.Validate("Entry Type", itemJnl."Entry Type"::Output);
+            7:
+                itemJnl.Validate("Entry Type", itemJnl."Entry Type"::"Assembly Consumption");
+            8:
+                itemJnl.Validate("Entry Type", itemJnl."Entry Type"::"Assembly Output");
+        end;
+        itemJnl.Validate("Item No.", ItemNo);
+        itemJnl.Validate("Unit of Measure Code", UOM);
+        itemJnl.Validate("Location Code", LocationCode);
+        itemJnl.Validate(Quantity, Qty);
+        if ZeroCost then
+            itemJnl.Validate("Unit Cost", UnitCost);
 
-            if GenProdPosting <> '' then
-                Validate("Gen. Prod. Posting Group", GenProdPosting);
-            if Quantity <> 0 then begin
-                if Insert(true) then begin
-                    DoItemTracking(itemJnl, LotNo, SerialNo);
-                    Validate("Shortcut Dimension 1 Code", Dim1);
-                    Validate("Shortcut Dimension 2 Code", Dim2);
-                    if DimSetId <> 0 then
-                        Validate("Dimension Set ID", DimSetId);
-                    Modify();
-                    CurrJournalLineNo += 1000;
-                end;
+        if GenProdPosting <> '' then
+            itemJnl.Validate("Gen. Prod. Posting Group", GenProdPosting);
+        if itemJnl.Quantity <> 0 then begin
+            if itemJnl.Insert(true) then begin
+                DoItemTracking(itemJnl, LotNo, SerialNo);
+                itemJnl.Validate("Shortcut Dimension 1 Code", Dim1);
+                itemJnl.Validate("Shortcut Dimension 2 Code", Dim2);
+                if DimSetId <> 0 then
+                    itemJnl.Validate("Dimension Set ID", DimSetId);
+                itemJnl.Modify();
+                CurrJournalLineNo += 1000;
             end;
         end;
+
     end;
 
     procedure CallItemJournalPostRoutine(): Boolean
@@ -230,15 +225,14 @@ codeunit 60602 "Create Item Journal"
         SessionID: Integer;
     begin
         Posted := false;
-        with itemJnl do begin
-            Reset();
-            SetFilter("Journal Template Name", '%1', GlobalTemplateName);
-            SetFilter("Journal Batch Name", '%1', GlobalBatchName);
-            if FindSet() then begin
-                Codeunit.Run(Codeunit::"Item Jnl.-Post", itemJnl);
-                // StartSession(SessionID, Codeunit::"Item Jnl.-Post", CompanyName, itemJnl);
-                // StopSession(SessionID)
-            end;
+        itemJnl.Reset();
+        itemJnl.SetFilter("Journal Template Name", '%1', GlobalTemplateName);
+        itemJnl.SetFilter("Journal Batch Name", '%1', GlobalBatchName);
+        if itemJnl.FindSet() then begin
+            Codeunit.Run(Codeunit::"Item Jnl.-Post", itemJnl);
+            // StartSession(SessionID, Codeunit::"Item Jnl.-Post", CompanyName, itemJnl);
+            // StopSession(SessionID)
+
         end;
         exit(Posted);
     end;

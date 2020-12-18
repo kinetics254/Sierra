@@ -87,13 +87,12 @@ codeunit 60603 "Pre-Processor"
     local procedure OnAfterPostPurchaseDoc(PurchCrMemoHdrNo: Code[20]; PurchInvHdrNo: Code[20]; PurchRcpHdrNo: Code[20]; RetShptHdrNo: Code[20]; var PurchaseHeader: Record "Purchase Header")
 
     begin
-        with PurchaseHeader do begin
-            case "Document Type" of
-                "Document Type"::Order, "Document Type"::Invoice, "Document Type"::"Blanket Order", "Document Type"::Quote:
-                    Posted := not (PurchInvHdrNo = '') or not (PurchRcpHdrNo = '');
-                "Document Type"::"Credit Memo", "Document Type"::"Return Order":
-                    Posted := not (PurchCrMemoHdrNo = '');
-            end;
+        case PurchaseHeader."Document Type" of
+            PurchaseHeader."Document Type"::Order, PurchaseHeader."Document Type"::Invoice,
+            PurchaseHeader."Document Type"::"Blanket Order", PurchaseHeader."Document Type"::Quote:
+                Posted := not (PurchInvHdrNo = '') or not (PurchRcpHdrNo = '');
+            PurchaseHeader."Document Type"::"Credit Memo", PurchaseHeader."Document Type"::"Return Order":
+                Posted := not (PurchCrMemoHdrNo = '');
         end;
     end;
 
@@ -109,13 +108,13 @@ codeunit 60603 "Pre-Processor"
     local procedure OnAfterPostSalesDoc(var SalesHeader: Record "Sales Header"; SalesCrMemoHdrNo: Code[20]; SalesInvHdrNo: Code[20]; SalesShptHdrNo: Code[20])
 
     begin
-        with SalesHeader do begin
-            case "Document Type" of
-                "Document Type"::Order, "Document Type"::Invoice, "Document Type"::"Blanket Order", "Document Type"::Quote:
-                    Posted := not (SalesInvHdrNo = '') or not (SalesShptHdrNo = '');
-                "Document Type"::"Credit Memo", "Document Type"::"Return Order":
-                    Posted := not (SalesCrMemoHdrNo = '');
-            end;
+
+        case SalesHeader."Document Type" of
+            SalesHeader."Document Type"::Order, SalesHeader."Document Type"::Invoice,
+            SalesHeader."Document Type"::"Blanket Order", SalesHeader."Document Type"::Quote:
+                Posted := not (SalesInvHdrNo = '') or not (SalesShptHdrNo = '');
+            SalesHeader."Document Type"::"Credit Memo", SalesHeader."Document Type"::"Return Order":
+                Posted := not (SalesCrMemoHdrNo = '');
         end;
     end;
 

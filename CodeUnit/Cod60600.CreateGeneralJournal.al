@@ -49,12 +49,10 @@ codeunit 60600 "Create General Journal"
             GlobalBatchName := BatchName;
             GlobalSourceCode := SourceCode;
             GlobalReasonCode := ReasonCode;
-            with GenJnlLine do begin
-                Reset();
-                SetFilter("Journal Template Name", '%1', TemplateName);
-                SetFilter("Journal Batch Name", '%1', BatchName);
-                if FindSet() then DeleteAll();
-            end;
+            GenJnlLine.Reset();
+            GenJnlLine.SetFilter("Journal Template Name", '%1', TemplateName);
+            GenJnlLine.SetFilter("Journal Batch Name", '%1', BatchName);
+            if GenJnlLine.FindSet() then GenJnlLine.DeleteAll();
 
         end;
         exit(CheckIfJournalExist(TemplateName, BatchName));
@@ -68,12 +66,10 @@ codeunit 60600 "Create General Journal"
     begin
         if GlobalTemplateName = '' then Error(TempNotDefined);
         if GlobalBatchName = '' then Error(BatchNotDefined);
-        with GenJnlLine do begin
-            "Journal Template Name" := GlobalTemplateName;
-            "Journal Batch Name" := GlobalBatchName;
-            "Source Code" := GlobalSourceCode;
-            "Reason Code" := GlobalReasonCode;
-        end;
+        GenJnlLine."Journal Template Name" := GlobalTemplateName;
+        GenJnlLine."Journal Batch Name" := GlobalBatchName;
+        GenJnlLine."Source Code" := GlobalSourceCode;
+        GenJnlLine."Reason Code" := GlobalReasonCode;
     end;
 
     procedure CallJournalPostRoutine(): Boolean
@@ -83,16 +79,13 @@ codeunit 60600 "Create General Journal"
     begin
         Posted := false;
 
-        with GenJnlLine do begin
-            Reset();
-            SetFilter("Journal Template Name", '%1', GlobalTemplateName);
-            SetFilter("Journal Batch Name", '%1', GlobalBatchName);
-            if FindSet() then begin
-                ReconcileHeaderLineAmounts(GenJnlLine);
-                Codeunit.Run(Codeunit::"Gen. Jnl.-Post", GenJnlLine);
-                // StartSession(SessionID, Codeunit::"Gen. Jnl.-Post", CompanyName, GenJnlLine);
-                // StopSession(SessionID);
-            end;
+        GenJnlLine.Reset();
+        GenJnlLine.SetFilter("Journal Template Name", '%1', GlobalTemplateName);
+        GenJnlLine.SetFilter("Journal Batch Name", '%1', GlobalBatchName);
+        if GenJnlLine.FindSet() then begin
+            ReconcileHeaderLineAmounts(GenJnlLine);
+            Codeunit.Run(Codeunit::"Gen. Jnl.-Post", GenJnlLine);
+
         end;
         exit(Posted);
     end;
@@ -204,147 +197,145 @@ codeunit 60600 "Create General Journal"
         SetJournalDefaults(); //Assign default Journal properties
         ClearVaribles();
         PackageArray(VaribleArray);
-        with GenJnlLine do begin
-            //Reset
-            "Applies-to Doc. Type" := GenJnlLine."Applies-to Doc. Type"::" ";
-            "Applies-to Doc. No." := '';
-            "Bal. Account Type" := GenJnlLine."Bal. Account Type"::"G/L Account";
-            "Bal. Account No." := '';
-            //Reset
+        //Reset
+        GenJnlLine."Applies-to Doc. Type" := GenJnlLine."Applies-to Doc. Type"::" ";
+        GenJnlLine."Applies-to Doc. No." := '';
+        GenJnlLine."Bal. Account Type" := GenJnlLine."Bal. Account Type"::"G/L Account";
+        GenJnlLine."Bal. Account No." := '';
+        //Reset
 
-            Validate("Posting Date", PostingDate);
-            Validate("Document Date", DocDate);
-            "Line No." := CurrJournalLineNo;
-            "Document No." := DocNo;
-            "External Document No." := ExtDocNo;
-            "System-Created Entry" := SysCreated;
-            case DocType of
-                0:
-                    "Document Type" := GenJnlLine."Document Type"::" ";
+        GenJnlLine.Validate("Posting Date", PostingDate);
+        GenJnlLine.Validate("Document Date", DocDate);
+        GenJnlLine."Line No." := CurrJournalLineNo;
+        GenJnlLine."Document No." := DocNo;
+        GenJnlLine."External Document No." := ExtDocNo;
+        GenJnlLine."System-Created Entry" := SysCreated;
+        case DocType of
+            0:
+                GenJnlLine."Document Type" := GenJnlLine."Document Type"::" ";
 
-                1:
-                    "Document Type" := GenJnlLine."Document Type"::Payment;
-                2:
-                    "Document Type" := GenJnlLine."Document Type"::Invoice;
-                3:
-                    "Document Type" := GenJnlLine."Document Type"::"Credit Memo";
-                4:
-                    "Document Type" := GenJnlLine."Document Type"::"Finance Charge Memo";
-                5:
-                    "Document Type" := GenJnlLine."Document Type"::Reminder;
-                6:
-                    "Document Type" := GenJnlLine."Document Type"::Refund;
+            1:
+                GenJnlLine."Document Type" := GenJnlLine."Document Type"::Payment;
+            2:
+                GenJnlLine."Document Type" := GenJnlLine."Document Type"::Invoice;
+            3:
+                GenJnlLine."Document Type" := GenJnlLine."Document Type"::"Credit Memo";
+            4:
+                GenJnlLine."Document Type" := GenJnlLine."Document Type"::"Finance Charge Memo";
+            5:
+                GenJnlLine."Document Type" := GenJnlLine."Document Type"::Reminder;
+            6:
+                GenJnlLine."Document Type" := GenJnlLine."Document Type"::Refund;
 
-            end;
-            case AccType of
-                0:
-                    "Account Type" := GenJnlLine."Account Type"::"G/L Account";
-
-                1:
-                    "Account Type" := GenJnlLine."Account Type"::Customer;
-                2:
-                    "Account Type" := GenJnlLine."Account Type"::Vendor;
-                3:
-                    "Account Type" := GenJnlLine."Account Type"::"Bank Account";
-                4:
-                    begin
-                        "Account Type" := GenJnlLine."Account Type"::"Fixed Asset";
-                        Validate("FA Posting Date", PostingDate);
-                        case FAPostingType of
-                            0:
-                                Validate("FA Posting Type", GenJnlLine."FA Posting Type"::" ");
-                            1:
-                                Validate("FA Posting Type", GenJnlLine."FA Posting Type"::"Acquisition Cost");
-                            2:
-                                Validate("FA Posting Type", GenJnlLine."FA Posting Type"::Depreciation);
-                            3:
-                                Validate("FA Posting Type", GenJnlLine."FA Posting Type"::"Write-Down");
-                            4:
-                                Validate("FA Posting Type", GenJnlLine."FA Posting Type"::Appreciation);
-                            5:
-                                Validate("FA Posting Type", GenJnlLine."FA Posting Type"::"Custom 1");
-                            6:
-                                Validate("FA Posting Type", GenJnlLine."FA Posting Type"::"Custom 2");
-                            7:
-                                Validate("FA Posting Type", GenJnlLine."FA Posting Type"::Disposal);
-                            8:
-                                Validate("FA Posting Type", GenJnlLine."FA Posting Type"::Maintenance);
-                        end;
-                    end;
-                5:
-                    "Account Type" := GenJnlLine."Account Type"::"IC Partner";
-                6:
-                    "Account Type" := GenJnlLine."Account Type"::Employee;
-
-
-            end;
-            Validate("Account No.", AccountNo);
-            Validate("Currency Code", CurrCode);
-            Validate(Amount, Amt);
-            Description := Desc;
-            If AppToDocNo <> '' then begin
-                case AppDocType of
-                    0:
-                        "Applies-to Doc. Type" := GenJnlLine."Applies-to Doc. Type"::" ";
-
-                    1:
-                        "Applies-to Doc. Type" := GenJnlLine."Applies-to Doc. Type"::Payment;
-                    2:
-                        "Applies-to Doc. Type" := GenJnlLine."Applies-to Doc. Type"::Invoice;
-                    3:
-                        "Applies-to Doc. Type" := GenJnlLine."Applies-to Doc. Type"::"Credit Memo";
-                    4:
-                        "Applies-to Doc. Type" := GenJnlLine."Applies-to Doc. Type"::"Finance Charge Memo";
-                    5:
-                        "Applies-to Doc. Type" := GenJnlLine."Applies-to Doc. Type"::Reminder;
-                    6:
-                        "Applies-to Doc. Type" := GenJnlLine."Applies-to Doc. Type"::Refund;
-
-                end;
-                Validate("Applies-to Doc. No.", AppToDocNo);
-            end;
-            if BalAccNo <> '' then begin
-                case BalAccType of
-                    0:
-                        "Bal. Account Type" := GenJnlLine."Bal. Account Type"::"G/L Account";
-
-                    1:
-                        "Bal. Account Type" := GenJnlLine."Bal. Account Type"::Customer;
-                    2:
-                        "Bal. Account Type" := GenJnlLine."Bal. Account Type"::Vendor;
-                    3:
-                        begin
-                            "Bal. Account Type" := GenJnlLine."Bal. Account Type"::"Bank Account";
-                            "Bal. Account No." := BalAccNo;
-                        end;
-
-                    4:
-                        "Bal. Account Type" := GenJnlLine."Bal. Account Type"::"Fixed Asset";
-                    5:
-                        "Bal. Account Type" := GenJnlLine."Bal. Account Type"::"IC Partner";
-                    6:
-                        "Bal. Account Type" := GenJnlLine."Bal. Account Type"::Employee;
-
-
-                end;
-                Validate("Bal. Account No.", BalAccNo);
-            end;
-            if VatBus <> '' then
-                Validate("VAT Bus. Posting Group", VatBus);
-            if VatProd <> '' then
-                Validate("VAT Prod. Posting Group", VatProd);
-            Validate("Pmt. Discount Date", 0D);
-            Validate("Payment Discount %", 0);
-            if Amount <> 0 then
-                if Insert() then begin
-                    Validate("Shortcut Dimension 1 Code", Dim1);
-                    Validate("Shortcut Dimension 2 Code", Dim2);
-                    if DimSetId <> 0 then
-                        Validate("Dimension Set ID", DimSetId);
-                    Modify();
-                    CurrJournalLineNo += 1000;
-                end;
         end;
+        case AccType of
+            0:
+                GenJnlLine."Account Type" := GenJnlLine."Account Type"::"G/L Account";
+
+            1:
+                GenJnlLine."Account Type" := GenJnlLine."Account Type"::Customer;
+            2:
+                GenJnlLine."Account Type" := GenJnlLine."Account Type"::Vendor;
+            3:
+                GenJnlLine."Account Type" := GenJnlLine."Account Type"::"Bank Account";
+            4:
+                begin
+                    GenJnlLine."Account Type" := GenJnlLine."Account Type"::"Fixed Asset";
+                    GenJnlLine.Validate("FA Posting Date", PostingDate);
+                    case FAPostingType of
+                        0:
+                            GenJnlLine.Validate("FA Posting Type", GenJnlLine."FA Posting Type"::" ");
+                        1:
+                            GenJnlLine.Validate("FA Posting Type", GenJnlLine."FA Posting Type"::"Acquisition Cost");
+                        2:
+                            GenJnlLine.Validate("FA Posting Type", GenJnlLine."FA Posting Type"::Depreciation);
+                        3:
+                            GenJnlLine.Validate("FA Posting Type", GenJnlLine."FA Posting Type"::"Write-Down");
+                        4:
+                            GenJnlLine.Validate("FA Posting Type", GenJnlLine."FA Posting Type"::Appreciation);
+                        5:
+                            GenJnlLine.Validate("FA Posting Type", GenJnlLine."FA Posting Type"::"Custom 1");
+                        6:
+                            GenJnlLine.Validate("FA Posting Type", GenJnlLine."FA Posting Type"::"Custom 2");
+                        7:
+                            GenJnlLine.Validate("FA Posting Type", GenJnlLine."FA Posting Type"::Disposal);
+                        8:
+                            GenJnlLine.Validate("FA Posting Type", GenJnlLine."FA Posting Type"::Maintenance);
+                    end;
+                end;
+            5:
+                GenJnlLine."Account Type" := GenJnlLine."Account Type"::"IC Partner";
+            6:
+                GenJnlLine."Account Type" := GenJnlLine."Account Type"::Employee;
+
+
+        end;
+        GenJnlLine.Validate("Account No.", AccountNo);
+        GenJnlLine.Validate("Currency Code", CurrCode);
+        GenJnlLine.Validate(Amount, Amt);
+        GenJnlLine.Description := Desc;
+        If AppToDocNo <> '' then begin
+            case AppDocType of
+                0:
+                    GenJnlLine."Applies-to Doc. Type" := GenJnlLine."Applies-to Doc. Type"::" ";
+
+                1:
+                    GenJnlLine."Applies-to Doc. Type" := GenJnlLine."Applies-to Doc. Type"::Payment;
+                2:
+                    GenJnlLine."Applies-to Doc. Type" := GenJnlLine."Applies-to Doc. Type"::Invoice;
+                3:
+                    GenJnlLine."Applies-to Doc. Type" := GenJnlLine."Applies-to Doc. Type"::"Credit Memo";
+                4:
+                    GenJnlLine."Applies-to Doc. Type" := GenJnlLine."Applies-to Doc. Type"::"Finance Charge Memo";
+                5:
+                    GenJnlLine."Applies-to Doc. Type" := GenJnlLine."Applies-to Doc. Type"::Reminder;
+                6:
+                    GenJnlLine."Applies-to Doc. Type" := GenJnlLine."Applies-to Doc. Type"::Refund;
+
+            end;
+            GenJnlLine.Validate("Applies-to Doc. No.", AppToDocNo);
+        end;
+        if BalAccNo <> '' then begin
+            case BalAccType of
+                0:
+                    GenJnlLine."Bal. Account Type" := GenJnlLine."Bal. Account Type"::"G/L Account";
+
+                1:
+                    GenJnlLine."Bal. Account Type" := GenJnlLine."Bal. Account Type"::Customer;
+                2:
+                    GenJnlLine."Bal. Account Type" := GenJnlLine."Bal. Account Type"::Vendor;
+                3:
+                    begin
+                        GenJnlLine."Bal. Account Type" := GenJnlLine."Bal. Account Type"::"Bank Account";
+                        GenJnlLine."Bal. Account No." := BalAccNo;
+                    end;
+
+                4:
+                    GenJnlLine."Bal. Account Type" := GenJnlLine."Bal. Account Type"::"Fixed Asset";
+                5:
+                    GenJnlLine."Bal. Account Type" := GenJnlLine."Bal. Account Type"::"IC Partner";
+                6:
+                    GenJnlLine."Bal. Account Type" := GenJnlLine."Bal. Account Type"::Employee;
+
+
+            end;
+            GenJnlLine.Validate("Bal. Account No.", BalAccNo);
+        end;
+        if VatBus <> '' then
+            GenJnlLine.Validate("VAT Bus. Posting Group", VatBus);
+        if VatProd <> '' then
+            GenJnlLine.Validate("VAT Prod. Posting Group", VatProd);
+        GenJnlLine.Validate("Pmt. Discount Date", 0D);
+        GenJnlLine.Validate("Payment Discount %", 0);
+        if GenJnlLine.Amount <> 0 then
+            if GenJnlLine.Insert() then begin
+                GenJnlLine.Validate("Shortcut Dimension 1 Code", Dim1);
+                GenJnlLine.Validate("Shortcut Dimension 2 Code", Dim2);
+                if DimSetId <> 0 then
+                    GenJnlLine.Validate("Dimension Set ID", DimSetId);
+                GenJnlLine.Modify();
+                CurrJournalLineNo += 1000;
+            end;
 
     end;
 
