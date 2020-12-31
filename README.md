@@ -1,5 +1,5 @@
 # Sierra
-MS Dynamics BC Approval Management
+MS Dynamics BC Journals and Posting API
 Gen Journal Array Arrangement
 1:   {Posting Date}                     :=      IsDate;  
 
