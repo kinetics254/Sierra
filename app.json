@@ -1,15 +1,15 @@
 {
   "id": "f87c6556-1705-45ef-94bc-91850df1a5ba",
-  "name": "Sierra",
+  "name": "Sierra Payments API",
   "publisher": "Kinetic Technology LTD",
   "version": "1.0.0.6",
-  "brief": "Ms Dynamics General Journal",
-  "description": "Allows for creation of General Journal",
+  "brief": "Ms Dynamics Financial Posting API",
+  "description": "Provides a simple API for posting financial documents",
   "privacyStatement": "",
   "EULA": "http://kinetics.co.ke/",
   "help": "http://kinetics.co.ke/",
   "url": "http://kinetics.co.ke/",
-  "logo": "GenJournal.png",
+  "logo": "sierra.png",
   "dependencies": [
     {
       "appId": "63ca2fa4-4f03-4f2b-a480-172fef340d3f",
